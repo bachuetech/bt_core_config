@@ -1,0 +1,22 @@
+# app_config.yml
+app_name: BACHUETECH AI
+version: v0.1.0
+environment: dev
+
+empty:
+dev:
+  api_path: /ai/api/
+  end_points:
+    - id: chat
+      path: /chat
+jeremy_dev:
+  files_app_dir: site
+  app_path: /jeremy
+  api_path: /ai/api/
+  end_points:
+    - id: chat
+      path: /chat
+    - id: prompt
+      path: /prompt
+    - id: models
+      path: /models

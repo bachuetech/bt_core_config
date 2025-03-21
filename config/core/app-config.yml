@@ -1,7 +1,7 @@
 # app_config.yml
 app_name: BACHUETECH AI
 version: v0.1.0
-environment: dev
+environment: devNone
 
 empty:
 dev:
@@ -9,7 +9,17 @@ dev:
   end_points:
     - id: chat
       path: /chat
+devNone:
+  api_path: /none/api/
+  end_points:
+    - id: chat
+      path: /chat      
 jeremy_dev:
+  agent:
+    host: localhost
+    port: 23332
+    secure: false
+    end_point: /ai/api/chat
   files_app_dir: site
   app_path: /jeremy
   api_path: /ai/api/

@@ -11,15 +11,28 @@ const APP_YML_CONFIG_ENV_VAR_NAME: &str = "BT_AIAPP_CONFIGYMLFILE";
 const APP_DEFAULT_NAME: &str = "BACHUETECH";
 const APP_DEFAULT_VERSION: &str = "x0.0.1d";
 
+const DEFAULT_AGENT_HOST: &str = "localhost";
+const DEFAULT_AGENT_PORT: u16 = 23332;
+
+
 #[derive(Clone, Debug)]
 pub struct AppConfig {
     name: String,
     version: String,
     environment: String,
+    agent: AgentConfig,
     files_app_dir: String,
     app_path: String,
     api_path: String,
     end_points: HashMap<String, String>
+}
+
+#[derive(Clone, Debug)]
+struct AgentConfig{
+    host: String,
+    port: u16,
+    secure: bool,
+    end_point: String,
 }
 
 impl AppConfig {
@@ -49,12 +62,20 @@ impl AppConfig {
         }
 
         let mut end_points = HashMap::new();
-        for value in app_config[app_environment.as_str()]["end_points"].clone() {
+        for ep_value in app_config[app_environment.as_str()]["end_points"].clone() {
             end_points.insert(
-                value["id"].as_str().unwrap().to_string(),
-                value["path"].as_str().unwrap_or(&format!("/{}",&value["id"].as_str().unwrap().to_string())).to_string(),
+                ep_value["id"].as_str().unwrap().to_string(),
+                ep_value["path"].as_str().unwrap_or(&format!("/{}",&ep_value["id"].as_str().unwrap().to_string())).to_string(),
             );
         }
+
+        //Agent
+        let agent_cfg = AgentConfig{
+            host: app_config[app_environment.as_str()]["agent"]["host"].as_str().unwrap_or(DEFAULT_AGENT_HOST).to_owned(),
+            port: app_config[app_environment.as_str()]["agent"]["port"].as_i64().unwrap_or(DEFAULT_AGENT_PORT.into()).try_into().unwrap_or(DEFAULT_AGENT_PORT),
+            secure: app_config[app_environment.as_str()]["agent"]["secure"].as_bool().unwrap_or(true),
+            end_point: app_config[app_environment.as_str()]["agent"]["end_point"].as_str().unwrap_or("/").to_owned(),
+        };
 
         let app_name = app_config["app_name"]
             .as_str()
@@ -80,6 +101,7 @@ impl AppConfig {
                 .unwrap_or("/api")
                 .to_string(),
             end_points: end_points,
+            agent: agent_cfg,
         }
     }
 
@@ -113,6 +135,11 @@ impl AppConfig {
     pub fn get_version(&self) -> &String {
         &self.version
     }
+
+    pub fn get_agent_url(&self) -> String{
+        let http = if self.agent.secure {"https"} else {"http"};
+        format!("{}://{}:{}{}",http,self.agent.host,self.agent.port,self.agent.end_point)
+    }
 }
 
 
@@ -127,27 +154,53 @@ mod app_config_tests {
 
 
     #[test]
+    pub fn test_agent_config_default_env(){
+        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,);
+        let ac = AppConfig::new(None);
+        println!("{:?}",&ac);
+        assert_eq!(ac.get_agent_url(),"https://localhost:23332/");
+    }
+
+    #[test]
+    pub fn test_agent_config_unknown_env(){
+        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,);
+        let er = "UNKNOWN";
+        let ac = AppConfig::new(Some(er.to_owned()));
+        println!("{:?}",&ac);
+        assert_eq!(ac.get_agent_url(),"https://localhost:23332/");
+    }
+
+    #[test]
+    pub fn test_agent_config_success_env(){
+        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,);
+        let er = "jeremy_dev";
+        let ac = AppConfig::new(Some(er.to_owned()));
+        println!("{:?}",&ac);
+        assert_eq!(ac.get_agent_url(),"http://localhost:23332/ai/api/chat");
+    }
+
+    #[test]
     pub fn test_app_config_default_env(){
         build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,);
         let ac = AppConfig::new(None);
         println!("{:?}",&ac);
         assert_eq!(ac.files_app_dir,"site");
         assert_eq!(ac.app_path,"/app");
-        assert_eq!(ac.api_path,"/ai/api/");
-        assert_eq!(ac.get_environment(),"dev");
+        assert_eq!(ac.api_path,"/none/api/");
+        assert_eq!(ac.get_environment(),"devNone");
         assert_eq!(ac.get_version(),"v0.1.0");
     }
 
     #[test]
     pub fn test_app_config_unkown_env(){
         build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,);
-        let er = "UNKONW";
+        let er = "UNKNOWN";
         let ac = AppConfig::new(Some(er.to_owned()));
         println!("{:?}",&ac);
         assert_eq!(ac.files_app_dir,"site");
         assert_eq!(ac.app_path,"/app");
-        assert_eq!(ac.api_path,"/ai/api/");
-        assert_eq!(ac.get_environment(),"dev");
+        assert_eq!(ac.api_path,"/none/api/");
+        assert_eq!(ac.get_environment(),"devNone");
         assert_eq!(ac.get_version(),"v0.1.0");
     }
 

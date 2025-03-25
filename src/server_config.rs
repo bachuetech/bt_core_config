@@ -25,7 +25,7 @@ impl ServerConfig {
         match get_yaml(SRV_YML_CONFIG_ENV_VAR_NAME, SRV_YML_CONFIG){
             Ok(y_file_conf) => srv_config = y_file_conf,
             Err(e) => {
-                log_fatal!("new","Fatal Error Reading SERVER configuration. Application aborted! {}",e.to_string()); 
+                log_fatal!("new","Fatal Error Reading SERVER configuration (PED: {}). Application aborted! {}",SERVER_CONFIG_READING_ERROR, e.to_string()); 
                 process::exit(SERVER_CONFIG_READING_ERROR);
             }, // Exit the program with code -103
         }

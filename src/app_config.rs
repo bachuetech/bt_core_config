@@ -42,7 +42,7 @@ impl AppConfig {
         
         match  get_yaml(APP_YML_CONFIG_ENV_VAR_NAME, APP_YML_CONFIG) {
             Ok(y_file_conf) => app_config = y_file_conf,
-            Err(e) => {log_fatal!("new","Fatal Error Reading APP configuration. Application aborted! {}",e.to_string()); process::exit(APP_CONFIG_READING_ERROR);}, // Exit the program with code -101 },
+            Err(e) => {log_fatal!("new","Fatal Error Reading APP configuration (PEC: {}). Application aborted! {}",APP_CONFIG_READING_ERROR, e.to_string()); process::exit(APP_CONFIG_READING_ERROR);}, // Exit the program with code -101 },
         }
         let app_environment: String;
 

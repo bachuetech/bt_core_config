@@ -6,7 +6,7 @@ use bt_yaml_utils::get_yaml;
 use yaml_rust2::Yaml;
 
 const APP_YML_CONFIG: &str = "config/core/app-config.yml";
-const APP_YML_CONFIG_ENV_VAR_NAME: &str = "BT_AIAPP_CONFIGYMLFILE";
+const APP_YML_CONFIG_ENV_VAR_NAME: &str = "BT_APP_CONFIGYMLFILE";
 
 const APP_DEFAULT_NAME: &str = "BACHUETECH";
 const APP_DEFAULT_VERSION: &str = "x0.0.1d";
@@ -53,6 +53,7 @@ impl AppConfig {
                     log_warning!("new","Could not find Running Environment {}. Using current default '{}' to continue.",&re, &app_environment);                    
                 }else{
                     app_environment = re.clone();
+                    log_info!("new","Using current environment '{}' from app config file.",&app_environment);
                 }
             },
             None => {

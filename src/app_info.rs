@@ -23,10 +23,6 @@ impl AppInfo {
         since = "0.2.1",
         note = "This function is for testing only. Avoid using in production.")]
     pub fn get_app_info(default_name: &'static str, default_version: &'static str, default_authors: &'static str, default_desciption: &'static str) -> Self{
-        #[cfg(not(test))]
-        panic!("AppInfo::get_app_info() function is for unit tests only!");
-
-        #[cfg(test)]
         println!("AppInfo::get_app_info() is safe to run in tests only!");
 
         let pkg_name: &'static str = match option_env!("CARGO_PKG_NAME"){

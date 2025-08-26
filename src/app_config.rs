@@ -87,7 +87,7 @@ impl AppConfig {
         let app_name = app_config["app_name"]
             .as_str()
             .unwrap_or(&app_info.package_name);
-        let app_ver = app_info.version.clone();
+        let app_ver = app_info.version;
         
         /*match option_env!("CARGO_PKG_VERSION"){
                             Some(v) => if v.is_empty() {
@@ -207,7 +207,7 @@ mod app_config_tests {
         assert_eq!(ac.app_path,"/app");
         assert_eq!(ac.api_path,"/none/api/");
         assert_eq!(ac.get_environment(),"devNone");
-        assert_eq!(ac.get_version(),"0.2.1");
+        assert_eq!(ac.get_version(),"0.2.2");
     }
 
     #[test]
@@ -222,7 +222,7 @@ mod app_config_tests {
         assert_eq!(ac.app_path,"/app");
         assert_eq!(ac.api_path,"/none/api/");
         assert_eq!(ac.get_environment(),"devNone");
-        assert_eq!(ac.get_version(),"0.2.1");
+        assert_eq!(ac.get_version(),"0.2.2");
     }
 
     #[test]
@@ -237,7 +237,7 @@ mod app_config_tests {
         assert_eq!(ac.app_path,"/app");
         assert_eq!(ac.api_path,"/api");
         assert_eq!(ac.get_environment(),er);
-        assert_eq!(ac.get_version(),"0.2.1");
+        assert_eq!(ac.get_version(),"0.2.2");
     }    
 
     #[test]
@@ -253,7 +253,7 @@ mod app_config_tests {
         assert_eq!(ac.get_app_path(),"/jeremy");
         assert_eq!(ac.get_api_path(),"/ai/api/");
         assert_eq!(ac.get_environment(),er);
-        assert_eq!(ac.get_version(),"0.2.1");
+        assert_eq!(ac.get_version(),"0.2.2");
     }
 
    #[test]
@@ -270,7 +270,7 @@ mod app_config_tests {
         assert_eq!(ac.get_app_path(),"/embeded");
         assert_eq!(ac.get_api_path(),"/ai/api/");
         assert_eq!(ac.get_environment(),er);
-        assert_eq!(ac.get_version(),"0.2.1");
+        assert_eq!(ac.get_version(),"0.2.2");
     }    
 
     #[test]

@@ -1,8 +1,6 @@
-use std::process;
+use std::error::Error;
 
-use bt_app_codes::process_exit_codes::SERVER_CONFIG_READING_ERROR;
-use bt_logger::log_fatal;
-use bt_yaml_utils::get_yaml;
+use bt_yaml_utils::{get_yaml, get_yaml_from_string};
 use yaml_rust2::Yaml;
 
 const SRV_YML_CONFIG: &str = "config/core/server-config.yml";
@@ -19,16 +17,24 @@ pub struct ServerConfig {
 }
 
 impl ServerConfig {
-    // Constructor. Reading from YAML file
-    pub fn new(run_env: String) -> Self {
-        let srv_config: Yaml;
-        match get_yaml(SRV_YML_CONFIG_ENV_VAR_NAME, SRV_YML_CONFIG){
-            Ok(y_file_conf) => srv_config = y_file_conf,
-            Err(e) => {
-                log_fatal!("new","Fatal Error Reading SERVER configuration (PEC: {}). Application aborted! {}",SERVER_CONFIG_READING_ERROR, e.to_string()); 
-                process::exit(SERVER_CONFIG_READING_ERROR);
-            }, // Exit the program with code -103
-        }
+    /// Constructor. Reading from YAML file
+    /// Arguments:
+    /// run_env: Receives the current running environment (The file may contain several environments)
+    /// embed_config: Content of the YML config file. None to use env variable or default.
+    pub fn new(run_env: String, embed_config: Option<&str>) -> Result<Self, Box<dyn Error>> {
+        let srv_config: Yaml = if let Some(yml_cfg) = embed_config {
+                                    get_yaml_from_string(yml_cfg)?
+                                } else {
+                                    get_yaml(SRV_YML_CONFIG_ENV_VAR_NAME, SRV_YML_CONFIG)?
+                                        /*match get_yaml(SRV_YML_CONFIG_ENV_VAR_NAME, SRV_YML_CONFIG)?{
+                                            Ok(y_file_conf) => srv_config = y_file_conf,
+                                            Err(e) => {
+                                                //log_fatal!("new","Fatal Error Reading SERVER configuration (PEC: {}). Application aborted! {}",SERVER_CONFIG_READING_ERROR, e.to_string()); 
+                                                return Err(get_fatal!("new","Fatal Error Reading SERVER configuration (PEC: {}). Application aborted! {}",SERVER_CONFIG_READING_ERROR, e).into())
+                                                //process::exit(SERVER_CONFIG_READING_ERROR);
+                                            }, // Exit the program with code -103
+                                        }*/
+                                };
 
         let mut srv_port = srv_config[run_env.as_str()]["server"]["port"]
             .as_i64()
@@ -39,7 +45,7 @@ impl ServerConfig {
             srv_port
         };
 
-        Self {
+        Ok(Self {
             host: srv_config[run_env.as_str()]["server"]["host"]
                 .as_str()
                 .unwrap_or(DEFAULT_HOST)
@@ -48,7 +54,7 @@ impl ServerConfig {
             secure: srv_config[run_env.as_str()]["server"]["secure"]
                 .as_bool()
                 .unwrap_or(true),
-        }
+        })
     }
 
     pub fn get_tcp_listener(&self) -> String {
@@ -64,8 +70,8 @@ impl ServerConfig {
     }
 }
 
-pub fn get_srv_config(current_env: String) -> ServerConfig {
-    ServerConfig::new(current_env)
+pub fn get_srv_config(current_env: String,  embed_config: Option<&str>) -> Result<ServerConfig, Box<dyn Error>> {
+    ServerConfig::new(current_env,  embed_config)
 }
 
 //***********/
@@ -84,7 +90,7 @@ mod server_config_tests {
     pub fn test_svr_conf_unkown_env(){
         build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,);
         let c_env = "UNKNOWN";
-        let sc = get_srv_config(c_env.to_owned());
+        let sc = get_srv_config(c_env.to_owned(), None).unwrap();
         println!("{:?}",&sc);
         assert_eq!(sc.get_port(),23339);
         assert_eq!(sc.host,"localhost");
@@ -95,7 +101,7 @@ mod server_config_tests {
     pub fn test_svr_conf_tpc_listener(){
         build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,);
         let c_env = "UNKNOWN";
-        let sc = ServerConfig::new(c_env.to_owned());
+        let sc = ServerConfig::new(c_env.to_owned(), None).unwrap();
         println!("{:?}",&sc);
         let res = format!("{}:{}", "localhost", 23339);
         assert_eq!(sc.get_tcp_listener(),res);
@@ -105,7 +111,7 @@ mod server_config_tests {
     pub fn test_svr_conf_tpc_listener_dev(){
         build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,);
         let c_env = "dev";
-        let sc = ServerConfig::new(c_env.to_owned());
+        let sc = ServerConfig::new(c_env.to_owned(), None).unwrap();
         println!("{:?}",&sc);
         let res = format!("{}:{}", "0.0.0.0", 23332);
         assert_eq!(sc.get_tcp_listener(),res);
@@ -113,10 +119,22 @@ mod server_config_tests {
     }
 
     #[test]
+    pub fn test_svr_conf_tpc_listener_dev_from_str(){
+        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,);
+        let c_env = "prod";
+        const YML_CONTENT: &str = include_str!("../config/core/server-config.yml");
+        let sc = ServerConfig::new(c_env.to_owned(), Some(YML_CONTENT)).unwrap();
+        println!("{:?}",&sc);
+        let res = format!("{}:{}", "127.0.0.1", 23333);
+        assert_eq!(sc.get_tcp_listener(),res);
+        assert_eq!(sc.is_secure(),true);
+    }
+
+    #[test]
     pub fn test_svr_conf_tpc_listener_empty(){
         build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,);
         let c_env = "empty";
-        let sc = ServerConfig::new(c_env.to_owned());
+        let sc = ServerConfig::new(c_env.to_owned(), None).unwrap();
         println!("{:?}",&sc);
         let res = format!("{}:{}", "localhost", 23339);
         assert_eq!(sc.get_tcp_listener(),res);

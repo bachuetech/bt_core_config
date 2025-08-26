@@ -30,3 +30,19 @@ jeremy_dev:
       path: /prompt
     - id: models
       path: /models
+embed_dev:
+  agent:
+    host: 127.0.0.1
+    port: 23333
+    secure: true
+    end_point: /ai/api/chat
+  files_app_dir: site
+  app_path: /embeded
+  api_path: /ai/api/
+  end_points:
+    - id: chat
+      path: /chat
+    - id: prompt
+      path: /prompt
+    - id: models
+      path: /models      

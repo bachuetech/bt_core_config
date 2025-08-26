@@ -1,2 +1,3 @@
 pub mod app_config;
 pub mod server_config;
+pub mod app_info;

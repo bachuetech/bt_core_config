@@ -4,3 +4,8 @@ dev:
     port: 23332
     secure: false
 empty:
+prod:
+  server:
+    host: 127.0.0.1
+    port: 23333
+    secure: true

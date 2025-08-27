@@ -68,6 +68,10 @@ impl ServerConfig {
     pub fn get_port(&self) -> u16 {
         self.port
     }
+
+    pub fn get_host(&self) -> String {
+        self.host.clone()
+    }    
 }
 
 pub fn get_srv_config(current_env: String,  embed_config: Option<&str>) -> Result<ServerConfig, Box<dyn Error>> {

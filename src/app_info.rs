@@ -99,7 +99,7 @@ impl AppInfo {
         Self { package_name: pkg_name, version: pkg_version, authors: pkg_authors, description: pkg_desc }
     }
 
-    fn get_app_name(package_name: Option<&str>) -> String{
+    pub fn get_app_name(package_name: Option<&str>) -> String{
        let pkg_name = package_name.unwrap_or("").trim();
        if pkg_name.len() > 0 
         { pkg_name.to_string() 

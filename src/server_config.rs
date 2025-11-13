@@ -92,7 +92,7 @@ mod server_config_tests {
 
     #[test]
     pub fn test_svr_conf_unkown_env(){
-        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,);
+        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR, None);
         let c_env = "UNKNOWN";
         let sc = get_srv_config(c_env.to_owned(), None).unwrap();
         println!("{:?}",&sc);
@@ -103,7 +103,7 @@ mod server_config_tests {
 
     #[test]
     pub fn test_svr_conf_tpc_listener(){
-        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,);
+        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let c_env = "UNKNOWN";
         let sc = ServerConfig::new(c_env.to_owned(), None).unwrap();
         println!("{:?}",&sc);
@@ -113,7 +113,7 @@ mod server_config_tests {
 
     #[test]
     pub fn test_svr_conf_tpc_listener_dev(){
-        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,);
+        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let c_env = "dev";
         let sc = ServerConfig::new(c_env.to_owned(), None).unwrap();
         println!("{:?}",&sc);
@@ -124,7 +124,7 @@ mod server_config_tests {
 
     #[test]
     pub fn test_svr_conf_tpc_listener_dev_from_str(){
-        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,);
+        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let c_env = "prod";
         const YML_CONTENT: &str = include_str!("../config/core/server-config.yml");
         let sc = ServerConfig::new(c_env.to_owned(), Some(YML_CONTENT)).unwrap();
@@ -136,7 +136,7 @@ mod server_config_tests {
 
     #[test]
     pub fn test_svr_conf_tpc_listener_empty(){
-        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,);
+        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let c_env = "empty";
         let sc = ServerConfig::new(c_env.to_owned(), None).unwrap();
         println!("{:?}",&sc);

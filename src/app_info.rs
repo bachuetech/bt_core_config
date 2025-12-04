@@ -65,32 +65,7 @@ impl AppInfo {
                                         };
 
 
-        let exe_path =   Self::get_current_exe_path();
-        let pkg_full_path: Option<String>;
-        let pkg_root: String;
-
-        if let Some(ep) = exe_path {
-            if let Some(dir) = ep.parent() {
-                if let Some(last_folder) = dir.file_name() {
-                    pkg_root = last_folder.to_string_lossy().to_string();
-                }else{
-                    pkg_root = pkg_name.to_string();
-                }
-
-                if let Some(pfp) =                 dir.to_str().clone(){
-                    pkg_full_path = Some(pfp.to_owned());
-                }else{
-                    pkg_full_path = None;
-                }
-            }else{
-                pkg_full_path = None;
-                pkg_root = pkg_name.to_string();
-            }
-        } else{ 
-            pkg_full_path = None; 
-            pkg_root = pkg_name.to_string(); 
-        }
-                                                
+        let (pkg_full_path, pkg_root) = Self::get_exe_dir_folder(pkg_name.to_string());
         Self { package_name: pkg_name, version: pkg_version, authors: pkg_authors, description: pkg_desc, pkg_full_folder_path: pkg_full_path, pkg_root_folder_only: pkg_root }
     }
 
@@ -131,6 +106,32 @@ impl AppInfo {
 
 
 
+        let (pkg_full_path, pkg_root) = Self::get_exe_dir_folder(pkg_name.to_string());
+        Self { package_name: pkg_name, version: pkg_version, authors: pkg_authors, description: pkg_desc, pkg_full_folder_path: pkg_full_path, pkg_root_folder_only: pkg_root }
+    }
+
+    fn get_current_exe_path() -> Option<PathBuf>{
+        let path = std::env::current_exe(); 
+        if path.is_ok(){
+            return Some(path.unwrap())
+        }
+
+        let path = std::env::current_dir();
+        if path.is_ok(){
+            return Some(path.unwrap())
+        }
+
+        let path = std::env::home_dir();
+        if path.is_some(){
+            return path
+        }
+
+        None
+    }
+
+    pub fn get_exe_dir_folder(package_name: String) -> (Option<String>, String){
+        let pkg_name = if package_name.trim().len() > 0 { package_name.trim() } else { "." };
+
         let exe_path =   Self::get_current_exe_path();
         let pkg_full_path: Option<String>;
         let pkg_root: String;
@@ -157,26 +158,7 @@ impl AppInfo {
             pkg_root = pkg_name.to_string(); 
         }
 
-        Self { package_name: pkg_name, version: pkg_version, authors: pkg_authors, description: pkg_desc, pkg_full_folder_path: pkg_full_path, pkg_root_folder_only: pkg_root }
-    }
-
-    fn get_current_exe_path() -> Option<PathBuf>{
-        let path = std::env::current_exe(); 
-        if path.is_ok(){
-            return Some(path.unwrap())
-        }
-
-        let path = std::env::current_dir();
-        if path.is_ok(){
-            return Some(path.unwrap())
-        }
-
-        let path = std::env::home_dir();
-        if path.is_some(){
-            return path
-        }
-
-        None
+        (pkg_full_path, pkg_root)
     }
 
     pub fn get_app_name(package_name: Option<&str>) -> String{

@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, path::PathBuf};
 
 ///Initialize basic information gathering data from Cargo.toml or default values.
 
@@ -6,7 +6,10 @@ pub struct AppInfo{
     pub package_name: &'static str,
     pub version: &'static str,
     pub authors: &'static str,
-    pub description: &'static str
+    pub description: &'static str,
+
+    pub pkg_full_folder_path: Option<String>,
+    pub pkg_root_folder_only: String,
 }
 
 pub struct CargoPkg{
@@ -14,6 +17,7 @@ pub struct CargoPkg{
     pub pkg_version: Option<&'static str>,
     pub pkg_authors: Option<&'static str>,
     pub pkg_desc: Option<&'static str>,
+
 }
 
 impl AppInfo {
@@ -59,7 +63,35 @@ impl AppInfo {
                                                                     },
                                             None => default_desciption,
                                         };
-        Self { package_name: pkg_name, version: pkg_version, authors: pkg_authors, description: pkg_desc }
+
+
+        let exe_path =   Self::get_current_exe_path();
+        let pkg_full_path: Option<String>;
+        let pkg_root: String;
+
+        if let Some(ep) = exe_path {
+            if let Some(dir) = ep.parent() {
+                if let Some(last_folder) = dir.file_name() {
+                    pkg_root = last_folder.to_string_lossy().to_string();
+                }else{
+                    pkg_root = pkg_name.to_string();
+                }
+
+                if let Some(pfp) =                 dir.to_str().clone(){
+                    pkg_full_path = Some(pfp.to_owned());
+                }else{
+                    pkg_full_path = None;
+                }
+            }else{
+                pkg_full_path = None;
+                pkg_root = pkg_name.to_string();
+            }
+        } else{ 
+            pkg_full_path = None; 
+            pkg_root = pkg_name.to_string(); 
+        }
+                                                
+        Self { package_name: pkg_name, version: pkg_version, authors: pkg_authors, description: pkg_desc, pkg_full_folder_path: pkg_full_path, pkg_root_folder_only: pkg_root }
     }
 
 
@@ -96,7 +128,55 @@ impl AppInfo {
                                                                     },
                                             None => default_desciption,
                                         };
-        Self { package_name: pkg_name, version: pkg_version, authors: pkg_authors, description: pkg_desc }
+
+
+
+        let exe_path =   Self::get_current_exe_path();
+        let pkg_full_path: Option<String>;
+        let pkg_root: String;
+
+        if let Some(ep) = exe_path {
+            if let Some(dir) = ep.parent() {
+                if let Some(last_folder) = dir.file_name() {
+                    pkg_root = last_folder.to_string_lossy().to_string();
+                }else{
+                    pkg_root = pkg_name.to_string();
+                }
+
+                if let Some(pfp) =                 dir.to_str().clone(){
+                    pkg_full_path = Some(pfp.to_owned());
+                }else{
+                    pkg_full_path = None;
+                }
+            }else{
+                pkg_full_path = None;
+                pkg_root = pkg_name.to_string();
+            }
+        } else{ 
+            pkg_full_path = None; 
+            pkg_root = pkg_name.to_string(); 
+        }
+
+        Self { package_name: pkg_name, version: pkg_version, authors: pkg_authors, description: pkg_desc, pkg_full_folder_path: pkg_full_path, pkg_root_folder_only: pkg_root }
+    }
+
+    fn get_current_exe_path() -> Option<PathBuf>{
+        let path = std::env::current_exe(); 
+        if path.is_ok(){
+            return Some(path.unwrap())
+        }
+
+        let path = std::env::current_dir();
+        if path.is_ok(){
+            return Some(path.unwrap())
+        }
+
+        let path = std::env::home_dir();
+        if path.is_some(){
+            return path
+        }
+
+        None
     }
 
     pub fn get_app_name(package_name: Option<&str>) -> String{
@@ -146,5 +226,5 @@ mod app_config_tests {
     pub fn test_get_app_name_with_empty_success(){
         let name = AppInfo::get_app_name(Some(""));
         assert_eq!(name,"bt_core_config");
-    }       
+    }   
 }

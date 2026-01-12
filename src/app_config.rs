@@ -215,7 +215,7 @@ mod app_config_tests {
         assert_eq!(ac.app_path,"/app");
         assert_eq!(ac.api_path,"/none/api/");
         assert_eq!(ac.get_environment(),"devNone");
-        assert_eq!(ac.get_version(),"0.2.7");
+        assert_eq!(ac.get_version(),"0.3.0");
     }
 
     #[test]
@@ -230,7 +230,7 @@ mod app_config_tests {
         assert_eq!(ac.app_path,"/app");
         assert_eq!(ac.api_path,"/none/api/");
         assert_eq!(ac.get_environment(),"devNone");
-        assert_eq!(ac.get_version(),"0.2.7");
+        assert_eq!(ac.get_version(),"0.3.0");
     }
 
     #[test]
@@ -245,7 +245,7 @@ mod app_config_tests {
         assert_eq!(ac.app_path,"/app");
         assert_eq!(ac.api_path,"/api");
         assert_eq!(ac.get_environment(),er);
-        assert_eq!(ac.get_version(),"0.2.7");
+        assert_eq!(ac.get_version(),"0.3.0");
     }    
 
     #[test]
@@ -261,7 +261,7 @@ mod app_config_tests {
         assert_eq!(ac.get_app_path(),"/jeremy");
         assert_eq!(ac.get_api_path(),"/ai/api/");
         assert_eq!(ac.get_environment(),er);
-        assert_eq!(ac.get_version(),"0.2.7");
+        assert_eq!(ac.get_version(),"0.3.0");
     }
 
    #[test]
@@ -278,7 +278,7 @@ mod app_config_tests {
         assert_eq!(ac.get_app_path(),"/embeded");
         assert_eq!(ac.get_api_path(),"/ai/api/");
         assert_eq!(ac.get_environment(),er);
-        assert_eq!(ac.get_version(),"0.2.7");
+        assert_eq!(ac.get_version(),"0.3.0");
     }    
 
     #[test]

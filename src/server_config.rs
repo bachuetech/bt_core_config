@@ -21,7 +21,17 @@ impl ServerConfig {
     /// Arguments:
     /// run_env: Receives the current running environment (The file may contain several environments)
     /// embed_config: Content of the YML config file. None to use env variable or default.
-    pub fn new(run_env: String, embed_config: Option<&str>) -> Result<Self, Box<dyn Error>> {
+    pub fn new(running_env: Option<String>, embed_config: Option<&str>) -> Result<Self, Box<dyn Error>> {
+        let run_env = match running_env{
+                            Some(re) => re,
+                            None => {
+                                #[cfg(debug_assertions)]
+                                    const RUN_ENV: &str = "dev";
+                                #[cfg(not(debug_assertions))]
+                                    const RUN_ENV: &str = "prod"; 
+                                RUN_ENV.to_owned()
+                            },
+                         }; 
         let srv_config: Yaml = if let Some(yml_cfg) = embed_config {
                                     get_yaml_from_string(yml_cfg)?
                                 } else {
@@ -75,7 +85,7 @@ impl ServerConfig {
 }
 
 pub fn get_srv_config(current_env: String,  embed_config: Option<&str>) -> Result<ServerConfig, Box<dyn Error>> {
-    ServerConfig::new(current_env,  embed_config)
+    ServerConfig::new(Some(current_env),  embed_config)
 }
 
 //***********/
@@ -105,7 +115,7 @@ mod server_config_tests {
     pub fn test_svr_conf_tpc_listener(){
         build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let c_env = "UNKNOWN";
-        let sc = ServerConfig::new(c_env.to_owned(), None).unwrap();
+        let sc = ServerConfig::new(Some(c_env.to_owned()), None).unwrap();
         println!("{:?}",&sc);
         let res = format!("{}:{}", "localhost", 23339);
         assert_eq!(sc.get_tcp_listener(),res);
@@ -115,7 +125,7 @@ mod server_config_tests {
     pub fn test_svr_conf_tpc_listener_dev(){
         build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let c_env = "dev";
-        let sc = ServerConfig::new(c_env.to_owned(), None).unwrap();
+        let sc = ServerConfig::new(Some(c_env.to_owned()), None).unwrap();
         println!("{:?}",&sc);
         let res = format!("{}:{}", "0.0.0.0", 23332);
         assert_eq!(sc.get_tcp_listener(),res);
@@ -127,7 +137,7 @@ mod server_config_tests {
         build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let c_env = "prod";
         const YML_CONTENT: &str = include_str!("../config/core/server-config.yml");
-        let sc = ServerConfig::new(c_env.to_owned(), Some(YML_CONTENT)).unwrap();
+        let sc = ServerConfig::new(Some(c_env.to_owned()), Some(YML_CONTENT)).unwrap();
         println!("{:?}",&sc);
         let res = format!("{}:{}", "127.0.0.1", 23333);
         assert_eq!(sc.get_tcp_listener(),res);
@@ -138,7 +148,7 @@ mod server_config_tests {
     pub fn test_svr_conf_tpc_listener_empty(){
         build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let c_env = "empty";
-        let sc = ServerConfig::new(c_env.to_owned(), None).unwrap();
+        let sc = ServerConfig::new(Some(c_env.to_owned()), None).unwrap();
         println!("{:?}",&sc);
         let res = format!("{}:{}", "localhost", 23339);
         assert_eq!(sc.get_tcp_listener(),res);

@@ -12,8 +12,8 @@ const APP_YML_CONFIG_ENV_VAR_NAME: &str = "BT_APP_CONFIGYMLFILE";
 //const APP_DEFAULT_NAME: &str = "BACHUETECH";
 //const APP_DEFAULT_VERSION: &str = "x0.0.1d";
 
-const DEFAULT_AGENT_HOST: &str = "localhost";
-const DEFAULT_AGENT_PORT: u16 = 23332;
+//const DEFAULT_AGENT_HOST: &str = "localhost";
+//const DEFAULT_AGENT_PORT: u16 = 23332;
 
 
 #[derive(Clone, Debug)]
@@ -30,9 +30,9 @@ pub struct AppConfig {
 
 #[derive(Clone, Debug)]
 struct AgentConfig{
-    host: String,
-    port: u16,
-    secure: bool,
+    host: Option<String>,
+    port: Option<i64>,
+    secure: Option<bool>,
     end_point: String,
 }
 
@@ -85,10 +85,10 @@ impl AppConfig {
 
         //Location of the Remote AI Agent
         let agent_cfg = AgentConfig{
-            host: app_config[app_environment.as_str()]["agent"]["host"].as_str().unwrap_or(DEFAULT_AGENT_HOST).to_owned(),
-            port: app_config[app_environment.as_str()]["agent"]["port"].as_i64().unwrap_or(DEFAULT_AGENT_PORT.into()).try_into().unwrap_or(DEFAULT_AGENT_PORT),
-            secure: app_config[app_environment.as_str()]["agent"]["secure"].as_bool().unwrap_or(true),
-            end_point: app_config[app_environment.as_str()]["agent"]["end_point"].as_str().unwrap_or("/").to_owned(),
+            host: app_config[app_environment.as_str()]["agent"]["host"].as_str().map(|s| s.to_string()), //.unwrap_or(DEFAULT_AGENT_HOST).to_owned(),
+            port: app_config[app_environment.as_str()]["agent"]["port"].as_i64(), //.unwrap_or(DEFAULT_AGENT_PORT.into()).try_into().unwrap_or(DEFAULT_AGENT_PORT),
+            secure: app_config[app_environment.as_str()]["agent"]["secure"].as_bool(), //.unwrap_or(true),
+            end_point: app_config[app_environment.as_str()]["agent"]["end_point"].as_str().unwrap_or("").to_owned(),
         };
 
         //Application Information
@@ -157,8 +157,16 @@ impl AppConfig {
     }
 
     pub fn get_agent_url(&self) -> String{
-        let http = if self.agent.secure {"https"} else {"http"};
-        format!("{}://{}:{}{}",http,self.agent.host,self.agent.port,self.agent.end_point)
+        let mut agent_url = if self.agent.secure.is_some() {
+                                    if self.agent.secure.unwrap() {"https://".to_owned()} else {"http://".to_owned()}
+                                }else {"".to_owned()};
+        if self.agent.host.is_some() {
+            agent_url.push_str(&self.agent.host.clone().unwrap());
+        }
+        if self.agent.port.is_some() {
+            agent_url.push_str(&format!(":{}",self.agent.port.unwrap()));
+        }
+        format!("{}{}",agent_url,self.agent.end_point)
     }
 }
 
@@ -181,7 +189,7 @@ mod app_config_tests {
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");
         let ac = AppConfig::new(None, &app_info, None);
         println!("{:?}",&ac);
-        assert_eq!(ac.unwrap().get_agent_url(),"https://localhost:23332/");
+        assert_eq!(ac.unwrap().get_agent_url(),"");
     }
 
     #[test]
@@ -191,7 +199,7 @@ mod app_config_tests {
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");        
         let ac = AppConfig::new(Some(er.to_owned()), &app_info, None);
         println!("{:?}",&ac);
-        assert_eq!(ac.unwrap().get_agent_url(),"https://localhost:23332/");
+        assert_eq!(ac.unwrap().get_agent_url(),"");
     }
 
     #[test]

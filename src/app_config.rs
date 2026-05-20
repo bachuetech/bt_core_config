@@ -94,7 +94,7 @@ impl AppConfig {
         //Application Information
         let app_name = app_config["app_name"]
             .as_str()
-            .unwrap_or(&app_info.package_name);
+            .unwrap_or(app_info.package_name);
         let app_ver = app_info.version;
         
         /*match option_env!("CARGO_PKG_VERSION"){
@@ -120,7 +120,7 @@ impl AppConfig {
                 .as_str()
                 .unwrap_or("/api")
                 .to_string(),
-            end_points: end_points,
+            end_points,
             agent: agent_cfg,
         })
     }
@@ -163,8 +163,8 @@ impl AppConfig {
         if self.agent.host.is_some() {
             agent_url.push_str(&self.agent.host.clone().unwrap());
         }
-        if self.agent.port.is_some() {
-            agent_url.push_str(&format!(":{}",self.agent.port.unwrap()));
+        if let Some(agent_port) = self.agent.port {
+            agent_url.push_str(&format!(":{}",agent_port));
         }
         format!("{}{}",agent_url,self.agent.end_point)
     }
@@ -223,7 +223,7 @@ mod app_config_tests {
         assert_eq!(ac.app_path,"/app");
         assert_eq!(ac.api_path,"/none/api/");
         assert_eq!(ac.get_environment(),"devNone");
-        assert_eq!(ac.get_version(),"0.3.1");
+        assert_eq!(ac.get_version(),"0.3.2");
     }
 
     #[test]
@@ -238,7 +238,7 @@ mod app_config_tests {
         assert_eq!(ac.app_path,"/app");
         assert_eq!(ac.api_path,"/none/api/");
         assert_eq!(ac.get_environment(),"devNone");
-        assert_eq!(ac.get_version(),"0.3.1");
+        assert_eq!(ac.get_version(),"0.3.2");
     }
 
     #[test]
@@ -253,7 +253,7 @@ mod app_config_tests {
         assert_eq!(ac.app_path,"/app");
         assert_eq!(ac.api_path,"/api");
         assert_eq!(ac.get_environment(),er);
-        assert_eq!(ac.get_version(),"0.3.1");
+        assert_eq!(ac.get_version(),"0.3.2");
     }    
 
     #[test]
@@ -269,7 +269,7 @@ mod app_config_tests {
         assert_eq!(ac.get_app_path(),"/jeremy");
         assert_eq!(ac.get_api_path(),"/ai/api/");
         assert_eq!(ac.get_environment(),er);
-        assert_eq!(ac.get_version(),"0.3.1");
+        assert_eq!(ac.get_version(),"0.3.2");
     }
 
    #[test]
@@ -286,7 +286,7 @@ mod app_config_tests {
         assert_eq!(ac.get_app_path(),"/embeded");
         assert_eq!(ac.get_api_path(),"/ai/api/");
         assert_eq!(ac.get_environment(),er);
-        assert_eq!(ac.get_version(),"0.3.1");
+        assert_eq!(ac.get_version(),"0.3.2");
     }    
 
     #[test]

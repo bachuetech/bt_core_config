@@ -49,7 +49,7 @@ impl ServerConfig {
         let mut srv_port = srv_config[run_env.as_str()]["server"]["port"]
             .as_i64()
             .unwrap_or(DEFAULT_PORT);
-        srv_port = if srv_port < 0 || srv_port > 65535 {
+        srv_port = if !(0..=65535).contains(&srv_port) {
             DEFAULT_PORT
         } else {
             srv_port

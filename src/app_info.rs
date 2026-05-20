@@ -1,7 +1,6 @@
 use std::{env, path::PathBuf};
 
 ///Initialize basic information gathering data from Cargo.toml or default values.
-
 pub struct AppInfo{
     pub package_name: &'static str,
     pub version: &'static str,
@@ -112,13 +111,13 @@ impl AppInfo {
 
     fn get_current_exe_path() -> Option<PathBuf>{
         let path = std::env::current_exe(); 
-        if path.is_ok(){
-            return Some(path.unwrap())
+        if let Ok(p) = path{
+            return Some(p)
         }
 
         let path = std::env::current_dir();
-        if path.is_ok(){
-            return Some(path.unwrap())
+        if let Ok(p) = path {
+            return Some(p)
         }
 
         let path = std::env::home_dir();
@@ -130,7 +129,7 @@ impl AppInfo {
     }
 
     pub fn get_exe_dir_folder(package_name: String) -> (Option<String>, String){
-        let pkg_name = if package_name.trim().len() > 0 { package_name.trim() } else { "." };
+        let pkg_name = if !package_name.trim().is_empty() { package_name.trim() } else { "." };
 
         let exe_path =   Self::get_current_exe_path();
         let pkg_full_path: Option<String>;
@@ -144,7 +143,7 @@ impl AppInfo {
                     pkg_root = pkg_name.to_string();
                 }
 
-                if let Some(pfp) =                 dir.to_str().clone(){
+                if let Some(pfp) = dir.to_str(){
                     pkg_full_path = Some(pfp.to_owned());
                 }else{
                     pkg_full_path = None;
@@ -163,7 +162,7 @@ impl AppInfo {
 
     pub fn get_app_name(package_name: Option<&str>) -> String{
        let pkg_name = package_name.unwrap_or("").trim();
-       if pkg_name.len() > 0 
+       if !pkg_name.is_empty() 
         { pkg_name.to_string() 
         } else { //Get the name from current executable
             //gets the full path to the currently running executable.
@@ -175,7 +174,7 @@ impl AppInfo {
                 .unwrap_or_else(|| "BT_UnkownApp".to_string())
                 .split('-').next().map(|base| base.to_string()).unwrap_or("BT_UnkownApp".to_owned());
 
-            if full_name.trim().len() > 0{
+            if !full_name.trim().is_empty(){
                 full_name.trim().to_owned()
             }else{
                 "BT_UnkownApp".to_string()

@@ -1,11 +1,11 @@
 [package]
 name = "bt_core_config"
-version = "0.3.2"
+version = "0.3.3"
 edition = "2024"
 authors = ["calvarez <calvarez@bachuetech.biz>"]
 description = "Core Configuration. Application and Server."
 
 [dependencies]
-bt_logger = "0.3.2"
-bt_yaml_utils = "0.1.14"
+bt_logger = "0.4.0"
+bt_yaml_utils = "0.1.18"
 yaml-rust2 = "0.11.0"

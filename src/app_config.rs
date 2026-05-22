@@ -59,10 +59,10 @@ impl AppConfig {
                     #[cfg(not(debug_assertions))]
                         const RUN_ENV: &str = "prod";                     
                     app_environment = app_config["environment"].as_str().unwrap_or(RUN_ENV).to_owned();
-                    log_warning!("new","Could not find Running Environment {}. Using current default '{}' to continue.",&re, &app_environment);                    
+                    log_warning!("","Could not find Running Environment {}. Using current default '{}' to continue.",&re, &app_environment);                    
                 }else{
                     app_environment = re.clone();
-                    log_info!("new","Using current environment '{}' from app config file or default.",&app_environment);
+                    log_info!("","Using current environment '{}' from app config file or default.",&app_environment);
                 }
             },
             None => {
@@ -71,7 +71,7 @@ impl AppConfig {
                     #[cfg(not(debug_assertions))]
                         const RUN_ENV: &str = "prod";
                 app_environment = app_config["environment"].as_str().unwrap_or(RUN_ENV).to_owned();
-                log_info!("new","Using current environment '{}' from app config file or default.",&app_environment);
+                log_info!("","Using current environment '{}' from app config file or default.",&app_environment);
             },
         }
 

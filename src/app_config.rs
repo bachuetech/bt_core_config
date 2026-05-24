@@ -1,5 +1,6 @@
-use std::{collections::HashMap, error::Error};
+use std::collections::HashMap;
 
+use bt_any_error::any_err::AnyErr;
 use bt_logger::{log_info, log_warning};
 use bt_yaml_utils::{get_yaml, get_yaml_from_string};
 use yaml_rust2::Yaml;
@@ -38,7 +39,7 @@ struct AgentConfig{
 
 impl AppConfig {
     // Constructor to read from YAML file
-    pub fn new(running_environment: Option<String>, app_info: &AppInfo, embed_config: Option<&str>) -> Result<Self, Box<dyn Error>> {
+    pub fn new(running_environment: Option<String>, app_info: &AppInfo, embed_config: Option<&str>) -> Result<Self, AnyErr> {
         let app_config: Yaml = if let Some(yml_cfg) = embed_config {
             get_yaml_from_string(yml_cfg)?
         }else {
@@ -223,7 +224,7 @@ mod app_config_tests {
         assert_eq!(ac.app_path,"/app");
         assert_eq!(ac.api_path,"/none/api/");
         assert_eq!(ac.get_environment(),"devNone");
-        assert_eq!(ac.get_version(),"0.3.2");
+        assert_eq!(ac.get_version(),"0.3.5");
     }
 
     #[test]
@@ -238,7 +239,7 @@ mod app_config_tests {
         assert_eq!(ac.app_path,"/app");
         assert_eq!(ac.api_path,"/none/api/");
         assert_eq!(ac.get_environment(),"devNone");
-        assert_eq!(ac.get_version(),"0.3.2");
+        assert_eq!(ac.get_version(),"0.3.5");
     }
 
     #[test]
@@ -253,7 +254,7 @@ mod app_config_tests {
         assert_eq!(ac.app_path,"/app");
         assert_eq!(ac.api_path,"/api");
         assert_eq!(ac.get_environment(),er);
-        assert_eq!(ac.get_version(),"0.3.2");
+        assert_eq!(ac.get_version(),"0.3.5");
     }    
 
     #[test]
@@ -269,7 +270,7 @@ mod app_config_tests {
         assert_eq!(ac.get_app_path(),"/jeremy");
         assert_eq!(ac.get_api_path(),"/ai/api/");
         assert_eq!(ac.get_environment(),er);
-        assert_eq!(ac.get_version(),"0.3.2");
+        assert_eq!(ac.get_version(),"0.3.5");
     }
 
    #[test]
@@ -286,7 +287,7 @@ mod app_config_tests {
         assert_eq!(ac.get_app_path(),"/embeded");
         assert_eq!(ac.get_api_path(),"/ai/api/");
         assert_eq!(ac.get_environment(),er);
-        assert_eq!(ac.get_version(),"0.3.2");
+        assert_eq!(ac.get_version(),"0.3.5");
     }    
 
     #[test]

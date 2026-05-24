@@ -1,5 +1,5 @@
-use std::error::Error;
 
+use bt_any_error::any_err::AnyErr;
 use bt_yaml_utils::{get_yaml, get_yaml_from_string};
 use yaml_rust2::Yaml;
 
@@ -21,7 +21,7 @@ impl ServerConfig {
     /// Arguments:
     /// run_env: Receives the current running environment (The file may contain several environments)
     /// embed_config: Content of the YML config file. None to use env variable or default.
-    pub fn new(running_env: Option<String>, embed_config: Option<&str>) -> Result<Self, Box<dyn Error>> {
+    pub fn new(running_env: Option<String>, embed_config: Option<&str>) -> Result<Self, AnyErr> {
         let run_env = match running_env{
                             Some(re) => re,
                             None => {
@@ -84,7 +84,7 @@ impl ServerConfig {
     }    
 }
 
-pub fn get_srv_config(current_env: String,  embed_config: Option<&str>) -> Result<ServerConfig, Box<dyn Error>> {
+pub fn get_srv_config(current_env: String,  embed_config: Option<&str>) -> Result<ServerConfig, AnyErr> {
     ServerConfig::new(Some(current_env),  embed_config)
 }
 

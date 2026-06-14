@@ -6,16 +6,10 @@ use bt_yaml_utils::{get_yaml, get_yaml_from_string};
 use yaml_rust2::Yaml;
 
 use crate::app_info::AppInfo;
+use crate::utils::init_app_base_url;
 
 const APP_YML_CONFIG: &str = "config/core/app-config.yml";
 const APP_YML_CONFIG_ENV_VAR_NAME: &str = "BT_APP_CONFIGYMLFILE";
-
-//const APP_DEFAULT_NAME: &str = "BACHUETECH";
-//const APP_DEFAULT_VERSION: &str = "x0.0.1d";
-
-//const DEFAULT_AGENT_HOST: &str = "localhost";
-//const DEFAULT_AGENT_PORT: u16 = 23332;
-
 
 #[derive(Clone, Debug)]
 pub struct AppConfig {
@@ -44,10 +38,6 @@ impl AppConfig {
             get_yaml_from_string(yml_cfg)?
         }else {
             get_yaml(APP_YML_CONFIG_ENV_VAR_NAME, APP_YML_CONFIG)?
-        /*match  get_yaml(APP_YML_CONFIG_ENV_VAR_NAME, APP_YML_CONFIG) {
-            Ok(y_file_conf) => app_config = y_file_conf,
-            Err(e) => {log_fatal!("new","Fatal Error Reading APP configuration (PEC: {}). Application aborted! {}",APP_CONFIG_READING_ERROR, e.to_string()); process::exit(APP_CONFIG_READING_ERROR);}, // Exit the program with code -101 },
-        }*/
         };
 
         let app_environment: String;
@@ -98,13 +88,13 @@ impl AppConfig {
             .unwrap_or(app_info.package_name);
         let app_ver = app_info.version;
         
-        /*match option_env!("CARGO_PKG_VERSION"){
-                            Some(v) => if v.is_empty() {
-                                                        app_config["version"].as_str()
-                                                        .unwrap_or(APP_DEFAULT_VERSION)
-                                                     }else{v},
-                                None => app_config["version"].as_str()
-                                                        .unwrap_or(APP_DEFAULT_VERSION)};*/
+        let app_path = app_config[app_environment.as_str()]["app_path"]
+                .as_str()
+                .unwrap_or("/app")
+                .to_string();
+        
+        init_app_base_url(&app_path);
+
         Ok(Self {
             name: app_name.to_owned(),
             version: app_ver.to_owned(),
@@ -113,10 +103,7 @@ impl AppConfig {
                 .as_str()
                 .unwrap_or("site")
                 .to_string(),
-            app_path: app_config[app_environment.as_str()]["app_path"]
-                .as_str()
-                .unwrap_or("/app")
-                .to_string(),
+            app_path,
             api_path: app_config[app_environment.as_str()]["api_path"]
                 .as_str()
                 .unwrap_or("/api")
@@ -183,10 +170,9 @@ mod app_config_tests {
 
     use super::AppConfig;
 
-
     #[test]
     pub fn test_agent_config_default_env(){
-        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
+        build_logger("BACHUETECH","APP_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");
         let ac = AppConfig::new(None, &app_info, None);
         println!("{:?}",&ac);
@@ -195,7 +181,7 @@ mod app_config_tests {
 
     #[test]
     pub fn test_agent_config_unknown_env(){
-        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
+        build_logger("BACHUETECH","APP_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let er = "UNKNOWN";
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");        
         let ac = AppConfig::new(Some(er.to_owned()), &app_info, None);
@@ -205,7 +191,7 @@ mod app_config_tests {
 
     #[test]
     pub fn test_agent_config_success_env(){
-        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
+        build_logger("BACHUETECH","APP_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let er = "jeremy_dev";
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");                
         let ac = AppConfig::new(Some(er.to_owned()), &app_info, None);
@@ -215,7 +201,7 @@ mod app_config_tests {
 
     #[test]
     pub fn test_app_config_default_env(){
-        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
+        build_logger("BACHUETECH","APP_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");                
         let acr = AppConfig::new(None, &app_info, None);
         println!("{:?}",&acr);
@@ -229,7 +215,7 @@ mod app_config_tests {
 
     #[test]
     pub fn test_app_config_unkown_env(){
-        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
+        build_logger("BACHUETECH","APP_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let er = "UNKNOWN";
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");                
         let acr = AppConfig::new(Some(er.to_owned()), &app_info, None);
@@ -244,7 +230,7 @@ mod app_config_tests {
 
     #[test]
     pub fn test_app_config_empty_env(){
-        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
+        build_logger("BACHUETECH","APP_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let er = "empty";
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");                
         let acr = AppConfig::new(Some(er.to_owned()), &app_info, None);
@@ -259,7 +245,7 @@ mod app_config_tests {
 
     #[test]
     pub fn test_app_config_success(){
-        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
+        build_logger("BACHUETECH","APP_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let er = "jeremy_dev";
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");                
         let acr = AppConfig::new(Some(er.to_owned()), &app_info, None);
@@ -275,7 +261,7 @@ mod app_config_tests {
 
    #[test]
     pub fn test_app_config_embeded_success(){
-        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
+        build_logger("BACHUETECH","APP_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let er = "embed_dev";
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");
         const YML_CONTENT: &str = include_str!("../config/core/app-config.yml");        
@@ -292,7 +278,7 @@ mod app_config_tests {
 
     #[test]
     pub fn test_end_points(){
-        build_logger("BACHUETECH","SERVER_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
+        build_logger("BACHUETECH","APP_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let er = "dev";
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");                
         let ac = AppConfig::new(Some(er.to_owned()), &app_info, None);

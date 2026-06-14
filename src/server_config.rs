@@ -36,14 +36,6 @@ impl ServerConfig {
                                     get_yaml_from_string(yml_cfg)?
                                 } else {
                                     get_yaml(SRV_YML_CONFIG_ENV_VAR_NAME, SRV_YML_CONFIG)?
-                                        /*match get_yaml(SRV_YML_CONFIG_ENV_VAR_NAME, SRV_YML_CONFIG)?{
-                                            Ok(y_file_conf) => srv_config = y_file_conf,
-                                            Err(e) => {
-                                                //log_fatal!("","Fatal Error Reading SERVER configuration (PEC: {}). Application aborted! {}",SERVER_CONFIG_READING_ERROR, e.to_string()); 
-                                                return Err(get_fatal!("new","Fatal Error Reading SERVER configuration (PEC: {}). Application aborted! {}",SERVER_CONFIG_READING_ERROR, e).into())
-                                                //process::exit(SERVER_CONFIG_READING_ERROR);
-                                            }, // Exit the program with code -103
-                                        }*/
                                 };
 
         let mut srv_port = srv_config[run_env.as_str()]["server"]["port"]

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use bt_any_error::any_err::AnyErr;
-use bt_logger::{log_info, log_warning};
+use bt_logger::{log_error, log_info, log_warning};
 use bt_yaml_utils::{get_yaml, get_yaml_from_string};
 use yaml_rust2::Yaml;
 
@@ -33,7 +33,7 @@ struct AgentConfig{
 
 impl AppConfig {
     // Constructor to read from YAML file
-    pub fn new(running_environment: Option<String>, app_info: &AppInfo, embed_config: Option<&str>) -> Result<Self, AnyErr> {
+    pub fn new(running_environment: &str, app_info: &AppInfo, embed_config: Option<&str>) -> Result<Self, AnyErr> {
         let app_config: Yaml = if let Some(yml_cfg) = embed_config {
             get_yaml_from_string(yml_cfg)?
         }else {
@@ -42,7 +42,20 @@ impl AppConfig {
 
         let app_environment: String;
 
-        match running_environment{
+        if running_environment.trim().is_empty() || app_config[running_environment].is_badvalue(){
+            log_error!("","Invalid Running Environment '{}'. Will use default to continue.",running_environment);  
+            #[cfg(debug_assertions)]
+                const RUN_ENV: &str = "dev";
+            #[cfg(not(debug_assertions))]
+                const RUN_ENV: &str = "prod";                     
+            app_environment = app_config["environment"].as_str().unwrap_or(RUN_ENV).to_owned();
+            log_warning!("","Could not find Running Environment '{}'. Using current default '{}' to continue.",running_environment, app_environment);                    
+        }else{
+            app_environment = running_environment.to_owned();
+            log_info!("","Using current environment '{}'.",&app_environment);
+        }
+
+        /*match running_environment{
             Some(re) => {
                 if app_config[re.as_str()].is_badvalue(){
                     #[cfg(debug_assertions)]
@@ -64,7 +77,7 @@ impl AppConfig {
                 app_environment = app_config["environment"].as_str().unwrap_or(RUN_ENV).to_owned();
                 log_info!("","Using current environment '{}' from app config file or default.",&app_environment);
             },
-        }
+        }*/
 
         let mut end_points = HashMap::new();
         for ep_value in app_config[app_environment.as_str()]["end_points"].clone() {
@@ -174,7 +187,7 @@ mod app_config_tests {
     pub fn test_agent_config_default_env(){
         build_logger("BACHUETECH","APP_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");
-        let ac = AppConfig::new(None, &app_info, None);
+        let ac = AppConfig::new("", &app_info, None);
         println!("{:?}",&ac);
         assert_eq!(ac.unwrap().get_agent_url(),"");
     }
@@ -184,7 +197,7 @@ mod app_config_tests {
         build_logger("BACHUETECH","APP_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let er = "UNKNOWN";
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");        
-        let ac = AppConfig::new(Some(er.to_owned()), &app_info, None);
+        let ac = AppConfig::new(er, &app_info, None);
         println!("{:?}",&ac);
         assert_eq!(ac.unwrap().get_agent_url(),"");
     }
@@ -194,7 +207,7 @@ mod app_config_tests {
         build_logger("BACHUETECH","APP_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let er = "jeremy_dev";
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");                
-        let ac = AppConfig::new(Some(er.to_owned()), &app_info, None);
+        let ac = AppConfig::new(er, &app_info, None);
         println!("{:?}",&ac);
         assert_eq!(ac.unwrap().get_agent_url(),"http://localhost:23332/ai/api/chat");
     }
@@ -203,14 +216,14 @@ mod app_config_tests {
     pub fn test_app_config_default_env(){
         build_logger("BACHUETECH","APP_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");                
-        let acr = AppConfig::new(None, &app_info, None);
+        let acr = AppConfig::new("", &app_info, None);
         println!("{:?}",&acr);
         let ac = acr.unwrap();
         assert_eq!(ac.files_app_dir,"site");
         assert_eq!(ac.app_path,"/app");
         assert_eq!(ac.api_path,"/none/api/");
         assert_eq!(ac.get_environment(),"devNone");
-        assert_eq!(ac.get_version(),"0.3.5");
+        assert_eq!(ac.get_version(),"0.5.0");
     }
 
     #[test]
@@ -218,14 +231,14 @@ mod app_config_tests {
         build_logger("BACHUETECH","APP_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let er = "UNKNOWN";
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");                
-        let acr = AppConfig::new(Some(er.to_owned()), &app_info, None);
+        let acr = AppConfig::new(er, &app_info, None);
         println!("{:?}",&acr);
         let ac = acr.unwrap();        
         assert_eq!(ac.files_app_dir,"site");
         assert_eq!(ac.app_path,"/app");
         assert_eq!(ac.api_path,"/none/api/");
         assert_eq!(ac.get_environment(),"devNone");
-        assert_eq!(ac.get_version(),"0.3.5");
+        assert_eq!(ac.get_version(),"0.5.0");
     }
 
     #[test]
@@ -233,14 +246,14 @@ mod app_config_tests {
         build_logger("BACHUETECH","APP_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let er = "empty";
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");                
-        let acr = AppConfig::new(Some(er.to_owned()), &app_info, None);
+        let acr = AppConfig::new(er, &app_info, None);
         println!("{:?}",&acr);
         let ac = acr.unwrap();        
         assert_eq!(ac.files_app_dir,"site");
         assert_eq!(ac.app_path,"/app");
         assert_eq!(ac.api_path,"/api");
         assert_eq!(ac.get_environment(),er);
-        assert_eq!(ac.get_version(),"0.3.5");
+        assert_eq!(ac.get_version(),"0.5.0");
     }    
 
     #[test]
@@ -248,7 +261,7 @@ mod app_config_tests {
         build_logger("BACHUETECH","APP_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let er = "jeremy_dev";
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");                
-        let acr = AppConfig::new(Some(er.to_owned()), &app_info, None);
+        let acr = AppConfig::new(er, &app_info, None);
         println!("{:?}",&acr);
         let ac = acr.unwrap();        
         assert_eq!(ac.get_app_name(),"BACHUETECH AI");
@@ -256,7 +269,7 @@ mod app_config_tests {
         assert_eq!(ac.get_app_path(),"/jeremy");
         assert_eq!(ac.get_api_path(),"/ai/api/");
         assert_eq!(ac.get_environment(),er);
-        assert_eq!(ac.get_version(),"0.3.5");
+        assert_eq!(ac.get_version(),"0.5.0");
     }
 
    #[test]
@@ -265,7 +278,7 @@ mod app_config_tests {
         let er = "embed_dev";
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");
         const YML_CONTENT: &str = include_str!("../config/core/app-config.yml");        
-        let acr = AppConfig::new(Some(er.to_owned()), &app_info, Some(YML_CONTENT));
+        let acr = AppConfig::new(er, &app_info, Some(YML_CONTENT));
         println!("{:?}",&acr);
         let ac = acr.unwrap();        
         assert_eq!(ac.get_app_name(),"BACHUETECH AI");
@@ -273,7 +286,7 @@ mod app_config_tests {
         assert_eq!(ac.get_app_path(),"/embeded");
         assert_eq!(ac.get_api_path(),"/ai/api/");
         assert_eq!(ac.get_environment(),er);
-        assert_eq!(ac.get_version(),"0.3.5");
+        assert_eq!(ac.get_version(),"0.5.0");
     }    
 
     #[test]
@@ -281,7 +294,7 @@ mod app_config_tests {
         build_logger("BACHUETECH","APP_CONFIG",LogLevel::VERBOSE,LogTarget::STD_ERROR,None);
         let er = "dev";
         let app_info = AppInfo::get_app_info("AppName", "default_version", "Bachuetech", "Core Test");                
-        let ac = AppConfig::new(Some(er.to_owned()), &app_info, None);
+        let ac = AppConfig::new(er, &app_info, None);
         println!("{:?}",&ac);     
         assert_eq!(ac.unwrap().get_end_point("chat"),"/chat");
     }

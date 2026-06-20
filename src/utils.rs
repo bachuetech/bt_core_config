@@ -6,7 +6,7 @@ static APP_BASE_URL: OnceLock<&'static str> = OnceLock::new();
 
 pub(crate) fn init_app_base_url(base_url: &str){
     let leaked_url: &'static str = Box::leak(base_url.to_owned().into_boxed_str());
-    if let Err(e) = APP_BASE_URL.set(&leaked_url){
+    if let Err(e) = APP_BASE_URL.set(leaked_url){
         log_error!("","Cannot set intial App Base URL. Already initialized? Error: {}",e);
     }
 }

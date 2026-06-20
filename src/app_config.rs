@@ -40,7 +40,7 @@ impl AppConfig {
             get_yaml(APP_YML_CONFIG_ENV_VAR_NAME, APP_YML_CONFIG)?
         };
 
-        let app_environment: String;
+        let app_environment: &str;
 
         if running_environment.trim().is_empty() || app_config[running_environment].is_badvalue(){
             log_error!("","Invalid Running Environment '{}'. Will use default to continue.",running_environment);  
@@ -48,39 +48,15 @@ impl AppConfig {
                 const RUN_ENV: &str = "dev";
             #[cfg(not(debug_assertions))]
                 const RUN_ENV: &str = "prod";                     
-            app_environment = app_config["environment"].as_str().unwrap_or(RUN_ENV).to_owned();
+            app_environment = app_config["environment"].as_str().unwrap_or(RUN_ENV);
             log_warning!("","Could not find Running Environment '{}'. Using current default '{}' to continue.",running_environment, app_environment);                    
         }else{
-            app_environment = running_environment.to_owned();
+            app_environment = running_environment;
             log_info!("","Using current environment '{}'.",&app_environment);
         }
 
-        /*match running_environment{
-            Some(re) => {
-                if app_config[re.as_str()].is_badvalue(){
-                    #[cfg(debug_assertions)]
-                        const RUN_ENV: &str = "dev";
-                    #[cfg(not(debug_assertions))]
-                        const RUN_ENV: &str = "prod";                     
-                    app_environment = app_config["environment"].as_str().unwrap_or(RUN_ENV).to_owned();
-                    log_warning!("","Could not find Running Environment {}. Using current default '{}' to continue.",&re, &app_environment);                    
-                }else{
-                    app_environment = re.clone();
-                    log_info!("","Using current environment '{}' from app config file or default.",&app_environment);
-                }
-            },
-            None => {
-                    #[cfg(debug_assertions)]
-                        const RUN_ENV: &str = "dev";
-                    #[cfg(not(debug_assertions))]
-                        const RUN_ENV: &str = "prod";
-                app_environment = app_config["environment"].as_str().unwrap_or(RUN_ENV).to_owned();
-                log_info!("","Using current environment '{}' from app config file or default.",&app_environment);
-            },
-        }*/
-
         let mut end_points = HashMap::new();
-        for ep_value in app_config[app_environment.as_str()]["end_points"].clone() {
+        for ep_value in app_config[app_environment]["end_points"].clone() {
             end_points.insert(
                 ep_value["id"].as_str().unwrap().to_string(),
                 ep_value["path"].as_str().unwrap_or(&format!("/{}",&ep_value["id"].as_str().unwrap().to_string())).to_string(),
@@ -89,10 +65,10 @@ impl AppConfig {
 
         //Location of the Remote AI Agent
         let agent_cfg = AgentConfig{
-            host: app_config[app_environment.as_str()]["agent"]["host"].as_str().map(|s| s.to_string()), //.unwrap_or(DEFAULT_AGENT_HOST).to_owned(),
-            port: app_config[app_environment.as_str()]["agent"]["port"].as_i64(), //.unwrap_or(DEFAULT_AGENT_PORT.into()).try_into().unwrap_or(DEFAULT_AGENT_PORT),
-            secure: app_config[app_environment.as_str()]["agent"]["secure"].as_bool(), //.unwrap_or(true),
-            end_point: app_config[app_environment.as_str()]["agent"]["end_point"].as_str().unwrap_or("").to_owned(),
+            host: app_config[app_environment]["agent"]["host"].as_str().map(|s| s.to_string()), //.unwrap_or(DEFAULT_AGENT_HOST).to_owned(),
+            port: app_config[app_environment]["agent"]["port"].as_i64(), //.unwrap_or(DEFAULT_AGENT_PORT.into()).try_into().unwrap_or(DEFAULT_AGENT_PORT),
+            secure: app_config[app_environment]["agent"]["secure"].as_bool(), //.unwrap_or(true),
+            end_point: app_config[app_environment]["agent"]["end_point"].as_str().unwrap_or("").to_owned(),
         };
 
         //Application Information
@@ -101,7 +77,7 @@ impl AppConfig {
             .unwrap_or(app_info.package_name);
         let app_ver = app_info.version;
         
-        let app_path = app_config[app_environment.as_str()]["app_path"]
+        let app_path = app_config[app_environment]["app_path"]
                 .as_str()
                 .unwrap_or("/app")
                 .to_string();
@@ -112,12 +88,12 @@ impl AppConfig {
             name: app_name.to_owned(),
             version: app_ver.to_owned(),
             environment: app_environment.to_owned(),
-            files_app_dir: app_config[app_environment.as_str()]["files_app_dir"]
+            files_app_dir: app_config[app_environment]["files_app_dir"]
                 .as_str()
                 .unwrap_or("site")
                 .to_string(),
             app_path,
-            api_path: app_config[app_environment.as_str()]["api_path"]
+            api_path: app_config[app_environment]["api_path"]
                 .as_str()
                 .unwrap_or("/api")
                 .to_string(),
@@ -223,7 +199,7 @@ mod app_config_tests {
         assert_eq!(ac.app_path,"/app");
         assert_eq!(ac.api_path,"/none/api/");
         assert_eq!(ac.get_environment(),"devNone");
-        assert_eq!(ac.get_version(),"0.5.0");
+        assert_eq!(ac.get_version(),"0.6.0");
     }
 
     #[test]
@@ -238,7 +214,7 @@ mod app_config_tests {
         assert_eq!(ac.app_path,"/app");
         assert_eq!(ac.api_path,"/none/api/");
         assert_eq!(ac.get_environment(),"devNone");
-        assert_eq!(ac.get_version(),"0.5.0");
+        assert_eq!(ac.get_version(),"0.6.0");
     }
 
     #[test]
@@ -253,7 +229,7 @@ mod app_config_tests {
         assert_eq!(ac.app_path,"/app");
         assert_eq!(ac.api_path,"/api");
         assert_eq!(ac.get_environment(),er);
-        assert_eq!(ac.get_version(),"0.5.0");
+        assert_eq!(ac.get_version(),"0.6.0");
     }    
 
     #[test]
@@ -269,7 +245,7 @@ mod app_config_tests {
         assert_eq!(ac.get_app_path(),"/jeremy");
         assert_eq!(ac.get_api_path(),"/ai/api/");
         assert_eq!(ac.get_environment(),er);
-        assert_eq!(ac.get_version(),"0.5.0");
+        assert_eq!(ac.get_version(),"0.6.0");
     }
 
    #[test]
@@ -286,7 +262,7 @@ mod app_config_tests {
         assert_eq!(ac.get_app_path(),"/embeded");
         assert_eq!(ac.get_api_path(),"/ai/api/");
         assert_eq!(ac.get_environment(),er);
-        assert_eq!(ac.get_version(),"0.5.0");
+        assert_eq!(ac.get_version(),"0.6.0");
     }    
 
     #[test]

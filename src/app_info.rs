@@ -71,7 +71,7 @@ impl AppInfo {
 
     pub fn new(cargo_pkg: CargoPkg, default_name: &'static str, default_version: &'static str, default_authors: &'static str, default_desciption: &'static str) -> Self{
         let pkg_name: &'static str = match cargo_pkg.pkg_name{
-                                            Some(v) => if v.is_empty() {
+                                            Some(v) => if v.trim().is_empty() {
                                                                     default_name
                                                                 }else{
                                                                     v
@@ -79,7 +79,7 @@ impl AppInfo {
                                             None => default_name,
                                         };   
         let pkg_version: &str = match cargo_pkg.pkg_version{
-                                            Some(v) => if v.is_empty() {
+                                            Some(v) => if v.trim().is_empty() {
                                                                         default_version
                                                                     }else{
                                                                         v
@@ -87,7 +87,7 @@ impl AppInfo {
                                             None => default_version,
                                         };
         let pkg_authors: &str  = match cargo_pkg.pkg_authors{
-                                            Some(v) => if v.is_empty() {
+                                            Some(v) => if v.trim().is_empty() {
                                                                         default_authors
                                                                     }else{
                                                                         v
@@ -95,7 +95,7 @@ impl AppInfo {
                                             None => default_authors,
                                         };
         let pkg_desc: &str = match cargo_pkg.pkg_desc{
-                                            Some(v) => if v.is_empty() {
+                                            Some(v) => if v.trim().is_empty() {
                                                                         default_desciption
                                                                     }else{
                                                                         v
